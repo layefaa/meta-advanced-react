@@ -25,25 +25,23 @@ const LandingSection = () => {
     initialValues: {
       firstName: "",
       email: "",
-      type: "",
+      type: "hireMe",
       comment: "",
     },
-    onSubmit: async (values) => {
-      await submit("/", values);
+    onSubmit: async (values, formikHelpers) => {
+      await submit("/", values)
+        .then(() => {
+          if(response){
+            if (response.type === "success") {
+              onOpen(response.type, response.message);
+              formik.resetForm();
+            } else {
+              onOpen(response.type, response.message);
+            }
+          }
 
-      if (response.type === "success") {
-        onOpen({
-          message: response.message,
-          type: response.type,
-        });
-
-        formik.resetForm();
-      } else {
-        onOpen({
-          message: response.message,
-          type: response.type,
-        });
-      }
+        })
+        .catch((e) => console.log(e));
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("Required"),
@@ -97,7 +95,9 @@ const LandingSection = () => {
                 />
                 <FormErrorMessage>{formik.errors.email}</FormErrorMessage>
               </FormControl>
-              <FormControl>
+              <FormControl
+                isInvalid={formik.touched.type && formik.errors.type}
+              >
                 <FormLabel htmlFor="type">Type of enquiry</FormLabel>
                 <Select id="type" name="type" {...formik.getFieldProps("type")}>
                   <option value="hireMe">Freelance project proposal</option>
@@ -121,7 +121,7 @@ const LandingSection = () => {
                 <FormErrorMessage>{formik.errors.comment}</FormErrorMessage>
               </FormControl>
               <Button
-                disabled={isLoading}
+                isLoading={isLoading}
                 type="submit"
                 colorScheme="purple"
                 width="full"
